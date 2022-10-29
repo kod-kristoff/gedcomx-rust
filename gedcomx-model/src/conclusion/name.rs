@@ -1,18 +1,26 @@
-use crate::types::NamePartType;
+use quick_xml::events::{BytesEnd, BytesStart, Event};
+
+use crate::{conclusion::NameForm, ser::SerializeXml, types::NamePartType};
 
 /// A name conclusion
-#[derive(Debug)]
-pub struct Name {}
+#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Name {
+    name_forms: Vec<NameForm>,
+}
 
 impl Name {
     pub fn new() -> Self {
-        Self {}
+        Self {
+            name_forms: Vec::new(),
+        }
     }
 }
 
 // Builder lite
 impl Name {
-    pub fn name_form(self, name_form: Option<NameForm>) -> Self {
+    pub fn name_form(mut self, name_form: NameForm) -> Self {
+        self.name_forms.push(name_form);
         self
     }
 }
@@ -23,35 +31,30 @@ impl Name {
     }
 }
 
-/// A name form conclusion
-#[derive(Debug)]
-pub struct NameForm {
-    full_text: String,
-    lang: String,
+impl From<&str> for Name {
+    fn from(s: &str) -> Self {
+        Self::new().name_form(NameForm::new().full_text(s.into()))
+    }
 }
 
-impl NameForm {
-    pub fn new() -> Self {
-        Self {
-            full_text: String::new(),
-            lang: String::new(),
+impl SerializeXml for Name {
+    fn tag(&self) -> &str {
+        "name"
+    }
+    fn serialize_xml<W: std::io::Write>(
+        &self,
+        ser: &mut quick_xml::Writer<W>,
+    ) -> Result<(), crate::ser::SerError> {
+        let elem = BytesStart::new(self.tag());
+        ser.write_event(Event::Start(elem))?;
+
+        for name_form in &self.name_forms {
+            name_form.serialize_xml(ser)?;
         }
+        ser.write_event(Event::End(BytesEnd::new(self.tag())))?;
+        Ok(())
     }
 }
-
-// Builder lite
-impl NameForm {
-    pub fn full_text(mut self, full_text: String) -> Self {
-        self.full_text = full_text;
-        self
-    }
-
-    pub fn lang(mut self, lang: String) -> Self {
-        self.lang = lang;
-        self
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -65,19 +68,19 @@ mod tests {
             assert!(name.get_part(NamePartType::Surname).is_none());
         }
 
-        #[test]
-        fn null_form() {
-            let name = Name::new().name_form(None);
-            assert!(name.get_part(NamePartType::Given).is_none());
-            assert!(name.get_part(NamePartType::Surname).is_none());
-        }
+        // #[test]
+        // fn null_form() {
+        //     let name = Name::new().name_form(None);
+        //     assert!(name.get_part(NamePartType::Given).is_none());
+        //     assert!(name.get_part(NamePartType::Surname).is_none());
+        // }
 
         #[test]
         fn form_no_parts() {
             let name_form = NameForm::new()
                 .full_text("John Fitzgerald Kennedy".into())
                 .lang("en".into());
-            let name = Name::new().name_form(Some(name_form));
+            let name = Name::new().name_form(name_form);
             assert!(name.get_part(NamePartType::Given).is_none());
             assert!(name.get_part(NamePartType::Surname).is_none());
         }

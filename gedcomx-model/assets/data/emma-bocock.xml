@@ -2,7 +2,7 @@
 <gedcomx xmlns="http://gedcomx.org/v1/">
     <attribution>
         <contributor resource="#A-1"/>
-        <modified>2014-03-07T00:00:00-07:00</modified>
+        <modified>2014-03-07T07:00:00+00:00</modified>
     </attribution>
     <person extracted="true" id="P-1">
         <source description="#S-1"/>
@@ -57,7 +57,7 @@
             <value>England, birth certificate for Emma Bocock, born 23 July 1843; citing 1843 Birth in District and Sub-district of Ecclesall-Bierlow in the County of York, 303; General Registry Office, Southport.</value>
         </citation>
         <title>Birth Certificate of Emma Bocock, 23 July 1843, General Registry Office</title>
-        <created>1843-07-27T00:00:00-07:00</created>
+        <created>1843-07-27T07:00:00+00:00</created>
         <repository resource="#A-2"/>
     </sourceDescription>
     <agent id="A-1">

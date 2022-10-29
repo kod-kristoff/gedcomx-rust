@@ -1,5 +1,6 @@
 mod error;
 mod serialize_xml;
+pub mod xml;
 
 pub use crate::ser::error::SerError;
 pub use crate::ser::serialize_xml::{serialize_to_xml, SerializeXml};
