@@ -6,7 +6,7 @@ use crate::{
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
 pub struct SourceReference {
     description: Uri,
-    #[serde(skip_serializing)]
+    #[serde(default, skip_serializing)]
     description_id: String,
 }
 

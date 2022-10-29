@@ -19,7 +19,7 @@ pub struct Relationship {
     person1: Option<ResourceReference>,
     person2: Option<ResourceReference>,
     source: Option<ResourceReference>,
-    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     facts: Vec<Fact>,
 }
 

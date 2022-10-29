@@ -7,7 +7,7 @@ use crate::{ser::SerializeXml, types::NamePartType};
 #[serde(rename_all = "camelCase")]
 pub struct NameForm {
     full_text: String,
-    #[serde(skip_serializing_if = "String::is_empty")]
+    #[serde(default, skip_serializing_if = "String::is_empty")]
     lang: String,
 }
 

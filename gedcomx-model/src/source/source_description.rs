@@ -1,6 +1,6 @@
 use chrono::Utc;
 use quick_xml::events::{BytesEnd, BytesStart, Event};
-use serde::{Deserializer, Serializer};
+use serde::{Deserialize, Deserializer, Serializer};
 
 use super::{SourceCitation, SourceReference};
 use crate::{
@@ -18,23 +18,51 @@ pub fn ser_opt_date<S: Serializer>(v: &Option<DateTime>, s: S) -> Result<S::Ok, 
     }
 }
 
-pub fn deser_opt_date<'de, D>(deserializer: D) -> Result<Option<DateTime>, D::Error>
+pub fn deserialize_optional_datetime<'de, D>(deserializer: D) -> Result<Option<DateTime>, D::Error>
 where
     D: Deserializer<'de>,
 {
-    todo!()
+    deserializer.deserialize_option(OptionalDateTimeVisitor)
 }
 
-#[serde_as]
+struct OptionalDateTimeVisitor;
+
+impl<'de> serde::de::Visitor<'de> for OptionalDateTimeVisitor {
+    type Value = Option<DateTime>;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        formatter.write_str("optional timestamp")
+    }
+
+    fn visit_none<E>(self) -> Result<Self::Value, E>
+    where
+        E: serde::de::Error,
+    {
+        Ok(None)
+    }
+
+    fn visit_some<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        use chrono::TimeZone;
+        Ok(Some(Utc.timestamp_millis(i64::deserialize(deserializer)?)))
+    }
+}
+
+// #[serdxce_as]
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SourceDescription {
     resource_type: Option<Uri>,
     citations: Vec<SourceCitation>,
-    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     names: Vec<TextValue>,
     titles: Vec<TextValue>,
-    #[serde(serialize_with = "ser_opt_date", deserialize_with = "deser_opt_date")]
+    #[serde(
+        serialize_with = "ser_opt_date",
+        deserialize_with = "deserialize_optional_datetime"
+    )]
     // #[serde_as(as = "TimestampMilliSeconds<i64>")]
     created: Option<DateTime>,
     repository: Option<ResourceReference>,

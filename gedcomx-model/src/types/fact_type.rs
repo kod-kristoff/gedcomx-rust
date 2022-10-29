@@ -1,8 +1,10 @@
+use core::fmt;
+
 use crate::ser::SerializeXml;
 use quick_xml::events::{BytesStart, Event};
 
 /// Enumeration of standard fact types.
-#[derive(Debug, Clone, Copy, serde::Deserialize)] //, serde::Serialize)]
+#[derive(Debug, Clone, Copy)] //, serde::Deserialize)] //, serde::Serialize)]
 pub enum FactType {
     /// A fact of a person's birth.
     Birth,
@@ -19,6 +21,15 @@ impl FactType {
             // Self::Unknown => "http://gedcomx.org/Unknown",
         }
     }
+    pub fn from_qname_uri(qname_uri: &str) -> Self {
+        match qname_uri {
+            "http://gedcomx.org/Birth" => Self::Birth,
+            "http://gedcomx.org/Occupation" => Self::Occupation,
+            // Self::Intersex => "http://gedcomx.org/Intersex",
+            // Self::Unknown => "http://gedcomx.org/Unknown",
+            _ => todo!("handle qname_uri='{}'", qname_uri),
+        }
+    }
 }
 
 impl serde::Serialize for FactType {
@@ -27,6 +38,32 @@ impl serde::Serialize for FactType {
         S: serde::Serializer,
     {
         serializer.serialize_str(self.as_qname_uri())
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for FactType {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        deserializer.deserialize_str(FactTypeVisitor)
+    }
+}
+
+struct FactTypeVisitor;
+
+impl<'de> serde::de::Visitor<'de> for FactTypeVisitor {
+    type Value = FactType;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter.write_str("a uri")
+    }
+
+    fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+    where
+        E: serde::de::Error,
+    {
+        Ok(FactType::from_qname_uri(value))
     }
 }
 impl SerializeXml for FactType {

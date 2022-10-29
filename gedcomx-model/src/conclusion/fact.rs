@@ -11,7 +11,7 @@ use super::PlaceReference;
 #[serde_with::skip_serializing_none]
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Fact {
-    #[serde(skip_serializing_if = "String::is_empty")]
+    #[serde(default, skip_serializing_if = "String::is_empty")]
     value: String,
     r#type: FactType,
     date: Option<Date>,

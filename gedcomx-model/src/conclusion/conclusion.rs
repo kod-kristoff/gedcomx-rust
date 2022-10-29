@@ -12,7 +12,7 @@ use std::io;
 #[derive(Debug, serde::Deserialize, serde::Serialize)]
 pub struct Conclusion {
     analysis: Option<ResourceReference>,
-    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     sources: Vec<SourceReference>,
     // gender: Option<Gender>,
     // names: Vec<Name>,

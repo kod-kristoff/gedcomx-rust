@@ -11,7 +11,7 @@ use gedcomx_model::source::{SourceCitation, SourceDescription};
 use gedcomx_model::types::{FactType, Gender, RelationshipType, ResourceType};
 use gedcomx_model::GedcomX;
 
-fn emma_bocock() -> GedcomX {
+fn emma_bocock_example() -> GedcomX {
     let contributor = Agent::new()
         .id("A-1")
         .name("Jane Doe")
@@ -79,7 +79,7 @@ fn emma_bocock() -> GedcomX {
 
 #[test]
 fn serialize_as_xml() -> Result<(), Box<dyn Error>> {
-    let gedcomx = emma_bocock();
+    let gedcomx = emma_bocock_example();
 
     let mut writer = XmlSerializer::new_with_indent(io::Cursor::new(Vec::new()), b' ', 4);
 
@@ -100,7 +100,7 @@ fn serialize_as_xml() -> Result<(), Box<dyn Error>> {
 
 #[test]
 fn serialize_as_json() -> Result<(), Box<dyn Error>> {
-    let gedcomx = emma_bocock();
+    let gedcomx = emma_bocock_example();
 
     let result = serde_json::to_string_pretty(&gedcomx)?;
 
@@ -111,5 +111,13 @@ fn serialize_as_json() -> Result<(), Box<dyn Error>> {
         println!("line='{}'", result_line);
         assert_eq!(result_line, expected_line);
     }
+    Ok(())
+}
+
+#[test]
+fn deserialize_from_json() -> Result<(), Box<dyn Error>> {
+    let file = fs::File::open("assets/data/emma-bocock.json")?;
+    let reader = io::BufReader::new(file);
+    let emma_bocock: GedcomX = serde_json::from_reader(reader)?;
     Ok(())
 }

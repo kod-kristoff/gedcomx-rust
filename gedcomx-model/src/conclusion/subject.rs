@@ -14,7 +14,7 @@ pub fn is_default<T: Default + PartialEq>(t: &T) -> bool {
 pub struct Subject {
     #[serde(default, skip_serializing_if = "is_default")]
     extracted: bool,
-    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     evidence: Vec<EvidenceReference>,
     #[serde(flatten)]
     conclusion: Conclusion,

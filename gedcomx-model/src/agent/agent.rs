@@ -10,7 +10,7 @@ use crate::{
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
 pub struct Agent {
     names: Vec<TextValue>,
-    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     emails: Vec<ResourceReference>,
     id: String,
 }

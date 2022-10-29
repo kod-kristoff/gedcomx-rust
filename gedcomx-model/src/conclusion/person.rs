@@ -14,11 +14,11 @@ use super::{DocumentReference, Subject};
 pub struct Person {
     #[serde(flatten)]
     subject: Subject,
-    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     names: Vec<Name>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     gender: Option<Gender>,
-    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     facts: Vec<Fact>,
     id: String,
 }
