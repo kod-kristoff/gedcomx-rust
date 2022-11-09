@@ -1,16 +1,17 @@
 use crate::{
-    common::{EvidenceReference, ResourceReference},
+    common::{EvidenceReference, ResourceReference, Uri},
     conclusion::{Fact, Name},
     ser::{SerError, SerializeXml},
     source::SourceReference,
     types::Gender,
 };
+use deserx::DeserializeXml;
 use quick_xml::events::{BytesEnd, BytesStart, Event};
 use std::io;
 
 use super::{DocumentReference, Subject};
 
-#[derive(Debug, serde::Deserialize, serde::Serialize)]
+#[derive(Debug, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct Person {
     #[serde(flatten)]
     subject: Subject,
@@ -41,7 +42,7 @@ impl Person {
 // Builder lite
 impl Person {
     pub fn extracted(mut self, yes: bool) -> Self {
-        self.subject = self.subject.extracted(yes);
+        self.set_extracted(yes);
         self
     }
 
@@ -58,7 +59,7 @@ impl Person {
         self
     }
     pub fn gender(mut self, gender: Gender) -> Self {
-        self.gender = Some(gender);
+        self.set_gender(gender);
         self
     }
 
@@ -68,7 +69,7 @@ impl Person {
     }
 
     pub fn fact(mut self, fact: Fact) -> Self {
-        self.facts.push(fact);
+        self.add_fact(fact);
         self
     }
 }
@@ -77,6 +78,14 @@ impl Person {
     pub fn set_id(&mut self, id: String) {
         self.id = id;
     }
+    pub fn set_gender(&mut self, gender: Gender) {
+        self.gender = Some(gender);
+    }
+
+    pub fn set_extracted(&mut self, yes: bool) {
+        self.subject.set_extracted(yes);
+    }
+
     pub fn add_source(&mut self, source: SourceReference) {
         self.subject.add_source(source);
     }
@@ -88,6 +97,9 @@ impl Person {
     }
     pub fn set_analysis(&mut self, analysis: DocumentReference) {
         self.subject.set_analysis(analysis.into());
+    }
+    pub fn add_fact(&mut self, fact: Fact) {
+        self.facts.push(fact);
     }
 }
 
@@ -129,3 +141,157 @@ impl SerializeXml for Person {
         Ok(())
     }
 }
+
+impl DeserializeXml for Person {
+    fn deserialize_xml_with_start<'de, R: std::io::BufRead>(
+        deserializer: &mut quick_xml::Reader<R>,
+        start: &quick_xml::events::BytesStart<'de>,
+    ) -> Result<Self, quick_xml::Error> {
+        //     <R: std::io::BufRead>(
+        //     deserializer: &mut quick_xml::Reader<R>,
+        // ) -> Result<Self, quick_xml::Error> {
+        let mut buf = Vec::new();
+        let attr = start.try_get_attribute("id")?;
+        let id: String = if let Some(id) = attr {
+            id.unescape_value()?.into()
+            // person.set_contributor(ResourceReference::with_resource(
+            //     resource.unescape_value()?.into(),
+            // ));
+        } else {
+            todo!("handle no 'id'")
+        };
+        let mut person = Self::new(id);
+        let attr = start.try_get_attribute("extracted")?;
+        let extracted = if let Some(extracted) = attr {
+            match extracted.unescape_value()?.as_ref() {
+                "true" | "1" => true,
+                _ => false,
+            }
+        } else {
+            false
+        };
+        person.set_extracted(extracted);
+        loop {
+            match deserializer.read_event_into(&mut buf)? {
+                Event::Empty(e) => {
+                    log::debug!("read Empty={:?}", e);
+                    match e.name().as_ref() {
+                        b"analysis" => {
+                            let attr = e.try_get_attribute("resource")?;
+                            if let Some(value) = attr {
+                                person.set_analysis(DocumentReference::new(
+                                    value.unescape_value()?.into(),
+                                ));
+                            } else {
+                                todo!("handle error")
+                            }
+                        }
+                        b"evidence" => {
+                            let attr = e.try_get_attribute("resource")?;
+                            if let Some(value) = attr {
+                                person
+                                    .subject
+                                    .add_evidence(EvidenceReference::with_resource(
+                                        value.unescape_value()?.into(),
+                                    ));
+                            } else {
+                                todo!("handle error")
+                            }
+                        }
+                        b"gender" => {
+                            let attr = e.try_get_attribute("type")?;
+                            if let Some(value) = attr {
+                                person.set_gender(Gender::from_qname_uri(
+                                    value.unescape_value()?.as_ref(),
+                                ));
+                            } else {
+                                todo!("handle error")
+                            }
+                        }
+                        b"source" => {
+                            let attr = e.try_get_attribute("description")?;
+                            if let Some(source) = attr {
+                                person.add_source(SourceReference::new(
+                                    Uri::new(source.unescape_value()?.to_string()),
+                                    String::new(),
+                                ));
+                            } else {
+                                todo!("handle error")
+                            }
+                        }
+                        _tag => todo!("handle {:?}", e),
+                    }
+                }
+                Event::Start(e) => {
+                    log::debug!("read Start={:?}", e);
+                    match e.name().as_ref() {
+                        b"fact" => {
+                            log::trace!("found 'fact'");
+                            let fact = Fact::deserialize_xml_with_start(deserializer, &e)?;
+                            person.add_fact(fact);
+                        }
+                        b"name" => {
+                            log::trace!("found 'name'");
+                            let name = Name::deserialize_xml_with_start(deserializer, &e)?;
+                            person.add_name(name);
+                        }
+                        _tag => todo!("handle {:?}", e),
+                    }
+                }
+                Event::End(e) => match e.name().as_ref() {
+                    b"person" => {
+                        log::trace!("found end of 'person' returning ...");
+                        break;
+                    }
+                    _tag => log::trace!("skipping '{:?}' ...", e),
+                },
+                e => {
+                    log::trace!("got: {:?} skipping ...", e);
+                }
+            }
+        }
+        log::debug!("person = {:?}", person);
+        Ok(person)
+    }
+}
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
+
+//     #[test]
+//     fn deserialize_extracted_from_xml() -> Result<(), Box<dyn std::error::Error>> {
+//         let xml = r##"
+//     <person extracted="true" id="P-1">
+//         <source description="#S-1"/>
+//         <gender type="http://gedcomx.org/Female"/>
+//         <name>
+//             <nameForm>
+//                 <fullText>Emma Bocock</fullText>
+//             </nameForm>
+//         </name>
+//         <fact type="http://gedcomx.org/Birth">
+//             <date>
+//                 <original>23 June 1843</original>
+//             </date>
+//             <place>
+//                 <original>Broadfield Bar, Abbeydale Road, Ecclesall-Bierlow, York, England, United Kingdom</original>
+//             </place>
+//         </fact>
+//     </person>
+
+//         "##;
+//         let _person: Person = quick_xml::de::from_str(xml)?;
+//         Ok(())
+//     }
+//     #[test]
+//     fn deserialize_derived_from_xml() -> Result<(), Box<dyn std::error::Error>> {
+//         let xml = r##"
+//     <person id="C-1">
+//         <analysis resource="#D-1"/>
+//         <evidence resource="#P-1"/>
+//     </person>
+//         "##;
+//         let _person: Person = quick_xml::de::from_str(xml)?;
+//         Ok(())
+//     }
+// }

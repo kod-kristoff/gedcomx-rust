@@ -4,15 +4,17 @@ use crate::{
     ser::{xml, SerError, SerializeXml},
     types::{Gender, RelationshipType},
 };
+use deserx::DeserializeXml;
 use quick_xml::events::{BytesEnd, BytesStart, Event};
 use std::io;
 
 use super::{DocumentReference, Subject};
 
 #[serde_with::skip_serializing_none]
-#[derive(Debug, serde::Deserialize, serde::Serialize)]
+#[derive(Debug, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct Relationship {
-    id: Option<String>,
+    // #[serde(default)]
+    // id: Option<String>,
     r#type: RelationshipType,
     #[serde(flatten)]
     subject: Subject,
@@ -26,7 +28,7 @@ pub struct Relationship {
 impl Relationship {
     pub fn new(r#type: RelationshipType) -> Self {
         Self {
-            id: None,
+            // id: None,
             r#type,
             subject: Subject::default(),
             person1: None,
@@ -39,10 +41,10 @@ impl Relationship {
 
 // Builder lite
 impl Relationship {
-    pub fn id<S: Into<String>>(mut self, id: S) -> Self {
-        self.set_id(id.into());
-        self
-    }
+    // pub fn id<S: Into<String>>(mut self, id: S) -> Self {
+    //     self.set_id(id.into());
+    //     self
+    // }
     pub fn extracted(mut self, yes: bool) -> Self {
         self.subject = self.subject.extracted(yes);
         self
@@ -77,9 +79,9 @@ impl Relationship {
 }
 
 impl Relationship {
-    pub fn set_id(&mut self, id: String) {
-        self.id = Some(id);
-    }
+    // pub fn set_id(&mut self, id: String) {
+    //     self.id = Some(id);
+    // }
     pub fn set_person1(&mut self, person1: ResourceReference) {
         self.person1 = Some(person1);
     }
@@ -132,4 +134,140 @@ impl SerializeXml for Relationship {
         ser.write_event(Event::End(BytesEnd::new(self.tag())))?;
         Ok(())
     }
+}
+impl DeserializeXml for Relationship {
+    fn deserialize_xml_with_start<'de, R: std::io::BufRead>(
+        deserializer: &mut quick_xml::Reader<R>,
+        start: &quick_xml::events::BytesStart<'de>,
+    ) -> Result<Self, quick_xml::Error> {
+        //     <R: std::io::BufRead>(
+        //     deserializer: &mut quick_xml::Reader<R>,
+        // ) -> Result<Self, quick_xml::Error> {
+        let mut buf = Vec::new();
+        let attr = start.try_get_attribute("type")?;
+        let relationship_type = if let Some(value) = attr {
+            RelationshipType::from_qname_uri(value.unescape_value()?.as_ref())
+        } else {
+            todo!("handle no 'id'")
+        };
+        let mut relationship = Self::new(relationship_type);
+        loop {
+            match deserializer.read_event_into(&mut buf)? {
+                Event::Empty(e) => {
+                    log::debug!("read Empty={:?}", e);
+                    match e.name().as_ref() {
+                        b"person1" => {
+                            let attr = e.try_get_attribute("resource")?;
+                            if let Some(value) = attr {
+                                relationship.set_person1(ResourceReference::with_resource(
+                                    value.unescape_value()?.into(),
+                                ));
+                            } else {
+                                todo!("handle error")
+                            }
+                        }
+                        b"person2" => {
+                            let attr = e.try_get_attribute("resource")?;
+                            if let Some(value) = attr {
+                                relationship.set_person2(ResourceReference::with_resource(
+                                    value.unescape_value()?.into(),
+                                ));
+                            } else {
+                                todo!("handle error")
+                            }
+                        }
+                        b"evidence" => {
+                            let attr = e.try_get_attribute("resource")?;
+                            if let Some(value) = attr {
+                                // relationship.subject.add_evidence(
+                                //     EvidenceReference::with_resource(
+                                //         value.unescape_value()?.into(),
+                                //     ),
+                                // );
+                            } else {
+                                todo!("handle error")
+                            }
+                        }
+                        b"gender" => {
+                            let attr = e.try_get_attribute("type")?;
+                            if let Some(value) = attr {
+                                // relationship.set_gender(Gender::from_qname_uri(
+                                //     value.unescape_value()?.as_ref(),
+                                // ));
+                            } else {
+                                todo!("handle error")
+                            }
+                        }
+                        b"source" => {
+                            let attr = e.try_get_attribute("description")?;
+                            if let Some(source) = attr {
+                                // relationship.add_source(SourceReference::new(
+                                //     Uri::new(source.unescape_value()?.to_string()),
+                                //     String::new(),
+                                // ));
+                            } else {
+                                todo!("handle error")
+                            }
+                        }
+                        _tag => todo!("handle {:?}", e),
+                    }
+                }
+                Event::Start(e) => {
+                    log::debug!("read Start={:?}", e);
+                    match e.name().as_ref() {
+                        b"fact" => {
+                            log::trace!("found 'fact'");
+                            // let fact = Fact::deserialize_xml_with_start(deserializer, &e)?;
+                            // relationship.add_fact(fact);
+                        }
+                        b"name" => {
+                            log::trace!("found 'name'");
+                            // let name = Name::deserialize_xml_with_start(deserializer, &e)?;
+                            // relationship.add_name(name);
+                        }
+                        _tag => todo!("handle {:?}", e),
+                    }
+                }
+                Event::End(e) => match e.name().as_ref() {
+                    b"relationship" => {
+                        log::trace!("found end of 'relationship' returning ...");
+                        break;
+                    }
+                    _tag => log::trace!("skipping '{:?}' ...", e),
+                },
+                e => {
+                    log::trace!("got: {:?} skipping ...", e);
+                }
+            }
+        }
+        log::debug!("relationship = {:?}", relationship);
+        Ok(relationship)
+    }
+}
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn deserialize_extracted_from_xml() -> Result<(), Box<dyn std::error::Error>> {
+        let xml = r##"
+    <relationship type="http://gedcomx.org/ParentChild">
+        <person1 resource="#P-2"/>
+        <person2 resource="#P-1"/>
+    </relationship>
+        "##;
+        let _person: Relationship = quick_xml::de::from_str(xml)?;
+        Ok(())
+    }
+    // #[test]
+    // fn deserialize_derived_from_xml() -> Result<(), Box<dyn std::error::Error>> {
+    //     let xml = r##"
+    // <person id="C-1">
+    //     <analysis resource="#D-1"/>
+    //     <evidence resource="#P-1"/>
+    // </person>
+    //     "##;
+    //     let _person: Person = quick_xml::de::from_str(xml)?;
+    //     Ok(())
+    // }
 }

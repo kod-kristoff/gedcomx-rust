@@ -1,4 +1,5 @@
 use chrono::Utc;
+use deserx::DeserializeXml;
 use quick_xml::events::{BytesEnd, BytesStart, Event};
 use serde::{Deserialize, Deserializer, Serializer};
 
@@ -51,7 +52,7 @@ impl<'de> serde::de::Visitor<'de> for OptionalDateTimeVisitor {
 }
 
 // #[serdxce_as]
-#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SourceDescription {
     resource_type: Option<Uri>,
@@ -66,6 +67,7 @@ pub struct SourceDescription {
     // #[serde_as(as = "TimestampMilliSeconds<i64>")]
     created: Option<DateTime>,
     repository: Option<ResourceReference>,
+    #[serde(default)]
     id: String,
 }
 
@@ -187,5 +189,125 @@ impl SerializeXml for SourceDescription {
         }
         ser.write_event(Event::End(BytesEnd::new(self.tag())))?;
         Ok(())
+    }
+}
+
+impl DeserializeXml for SourceDescription {
+    fn deserialize_xml_with_start<'de, R: std::io::BufRead>(
+        deserializer: &mut quick_xml::Reader<R>,
+        start: &quick_xml::events::BytesStart<'de>,
+    ) -> Result<Self, quick_xml::Error> {
+        let mut buf = Vec::new();
+        let mut source_description = Self::new();
+        let attr = start.try_get_attribute("id")?;
+        let id: String = if let Some(id) = attr {
+            id.unescape_value()?.into()
+            // source_description.set_contributor(ResourceReference::with_resource(
+            //     resource.unescape_value()?.into(),
+            // ));
+        } else {
+            todo!("handle no 'id'")
+        };
+        source_description.set_id(id);
+        let attr = start.try_get_attribute("resourceType")?;
+        let resource_type = if let Some(resource_type) = attr {
+            Uri::new(resource_type.unescape_value()?.into())
+        } else {
+            todo!()
+        };
+        source_description.set_resource_type(resource_type);
+        loop {
+            match deserializer.read_event_into(&mut buf)? {
+                Event::Empty(e) => {
+                    log::debug!("read Empty={:?}", e);
+                    match e.name().as_ref() {
+                        b"analysis" => {
+                            let attr = e.try_get_attribute("resource")?;
+                            if let Some(value) = attr {
+                                // source_description.set_analysis(DocumentReference::new(
+                                //     value.unescape_value()?.into(),
+                                // ));
+                            } else {
+                                todo!("handle error")
+                            }
+                        }
+                        b"repository" => {
+                            let attr = e.try_get_attribute("resource")?;
+                            if let Some(value) = attr {
+                                source_description.set_repository(
+                                    ResourceReference::with_resource(
+                                        value.unescape_value()?.into(),
+                                    ),
+                                );
+                            } else {
+                                todo!("handle error")
+                            }
+                        }
+                        b"gender" => {
+                            let attr = e.try_get_attribute("type")?;
+                            if let Some(value) = attr {
+                                // source_description.set_gender(Gender::from_qname_uri(
+                                //     value.unescape_value()?.as_ref(),
+                                // ));
+                            } else {
+                                todo!("handle error")
+                            }
+                        }
+                        b"source" => {
+                            let attr = e.try_get_attribute("description")?;
+                            if let Some(source) = attr {
+                                // source_description.add_source(SourceReference::new(
+                                //     Uri::new(source.unescape_value()?.to_string()),
+                                //     String::new(),
+                                // ));
+                            } else {
+                                todo!("handle error")
+                            }
+                        }
+                        _tag => todo!("handle {:?}", e),
+                    }
+                }
+                Event::Start(e) => {
+                    log::debug!("read Start={:?}", e);
+                    match e.name().as_ref() {
+                        b"citation" => {
+                            log::trace!("found 'fact'");
+                            let citation =
+                                SourceCitation::deserialize_xml_with_start(deserializer, &e)?;
+                            source_description.add_citation(citation);
+                        }
+                        b"created" => {
+                            log::trace!("found 'created'");
+                            if let Event::Text(e_created) =
+                                deserializer.read_event_into(&mut buf)?
+                            {
+                                source_description.set_created(
+                                    e_created.unescape()?.as_ref().parse().expect("datetime"),
+                                );
+                            }
+                        }
+                        b"title" => {
+                            log::trace!("found 'title'");
+                            if let Event::Text(e_title) = deserializer.read_event_into(&mut buf)? {
+                                source_description.add_title(e_title.unescape()?.into());
+                            }
+                        }
+                        _tag => todo!("handle {:?}", e),
+                    }
+                }
+                Event::End(e) => match e.name().as_ref() {
+                    b"sourceDescription" => {
+                        log::trace!("found end of 'source_description' returning ...");
+                        break;
+                    }
+                    _tag => log::trace!("skipping '{:?}' ...", e),
+                },
+                e => {
+                    log::trace!("got: {:?} skipping ...", e);
+                }
+            }
+        }
+        log::debug!("source_description = {:?}", source_description);
+        Ok(source_description)
     }
 }

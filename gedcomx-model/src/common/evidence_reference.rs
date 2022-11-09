@@ -4,7 +4,7 @@ use crate::ser::SerializeXml;
 
 use super::Reference;
 
-#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct EvidenceReference {
     #[serde(rename = "resource", flatten)]
     reference: Reference,

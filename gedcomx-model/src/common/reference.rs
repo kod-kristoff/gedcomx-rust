@@ -1,4 +1,4 @@
-#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct Reference {
     resource: String, // TODO: use Uri type
     #[serde(skip_serializing_if = "Option::is_none")]

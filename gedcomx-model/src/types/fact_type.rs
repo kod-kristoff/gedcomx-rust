@@ -4,7 +4,7 @@ use crate::ser::SerializeXml;
 use quick_xml::events::{BytesStart, Event};
 
 /// Enumeration of standard fact types.
-#[derive(Debug, Clone, Copy)] //, serde::Deserialize)] //, serde::Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq)] //, serde::Deserialize)] //, serde::Serialize)]
 pub enum FactType {
     /// A fact of a person's birth.
     Birth,

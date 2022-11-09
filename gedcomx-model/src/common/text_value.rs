@@ -1,5 +1,5 @@
 #[serde_with::skip_serializing_none]
-#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct TextValue {
     value: String,
     lang: Option<String>,

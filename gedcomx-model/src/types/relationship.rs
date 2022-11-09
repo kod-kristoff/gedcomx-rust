@@ -2,7 +2,7 @@ use crate::{common::QnameUri, ser::SerializeXml};
 use quick_xml::events::{BytesStart, Event};
 
 /// Enumeration of standard relationship types.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum RelationshipType {
     AncestorDescendant,
     Couple,

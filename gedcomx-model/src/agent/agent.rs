@@ -1,5 +1,6 @@
 use std::fmt;
 
+use deserx::DeserializeXml;
 use quick_xml::events::{BytesEnd, BytesStart, Event};
 
 use crate::{
@@ -7,7 +8,7 @@ use crate::{
     ser::{xml, SerError, SerializeXml},
 };
 
-#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct Agent {
     names: Vec<TextValue>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -65,6 +66,12 @@ impl From<&Agent> for ResourceReference {
     }
 }
 
+pub fn verify_agents(aas: &[Agent], bs: &[Agent]) -> Result<(), String> {
+    if aas.len() != bs.len() {
+        return Err(format!("length mismatch: {} != {}", aas.len(), bs.len()));
+    }
+    todo!()
+}
 impl SerializeXml for Agent {
     fn tag(&self) -> &str {
         "agent"
@@ -86,5 +93,114 @@ impl SerializeXml for Agent {
         }
         ser.write_event(Event::End(BytesEnd::new(self.tag())))?;
         Ok(())
+    }
+}
+
+impl DeserializeXml for Agent {
+    fn deserialize_xml_with_start<'de, R: std::io::BufRead>(
+        deserializer: &mut quick_xml::Reader<R>,
+        start: &quick_xml::events::BytesStart<'de>,
+    ) -> Result<Self, quick_xml::Error> {
+        let mut buf = Vec::new();
+        let mut agent = Self::new();
+        let attr = start.try_get_attribute("id")?;
+        let id: String = if let Some(id) = attr {
+            id.unescape_value()?.into()
+            // agent.set_contributor(ResourceReference::with_resource(
+            //     resource.unescape_value()?.into(),
+            // ));
+        } else {
+            todo!("handle no 'id'")
+        };
+        agent.set_id(id);
+        loop {
+            match deserializer.read_event_into(&mut buf)? {
+                Event::Empty(e) => {
+                    log::debug!("read Empty={:?}", e);
+                    match e.name().as_ref() {
+                        b"analysis" => {
+                            let attr = e.try_get_attribute("resource")?;
+                            if let Some(value) = attr {
+                                // agent.set_analysis(DocumentReference::new(
+                                //     value.unescape_value()?.into(),
+                                // ));
+                            } else {
+                                todo!("handle error")
+                            }
+                        }
+                        b"email" => {
+                            let attr = e.try_get_attribute("resource")?;
+                            if let Some(value) = attr {
+                                agent.add_email(ResourceReference::with_resource(
+                                    value.unescape_value()?.into(),
+                                ));
+                            } else {
+                                todo!("handle error")
+                            }
+                        }
+                        b"gender" => {
+                            let attr = e.try_get_attribute("type")?;
+                            if let Some(value) = attr {
+                                // agent.set_gender(Gender::from_qname_uri(
+                                //     value.unescape_value()?.as_ref(),
+                                // ));
+                            } else {
+                                todo!("handle error")
+                            }
+                        }
+                        b"source" => {
+                            let attr = e.try_get_attribute("description")?;
+                            if let Some(source) = attr {
+                                // agent.add_source(SourceReference::new(
+                                //     Uri::new(source.unescape_value()?.to_string()),
+                                //     String::new(),
+                                // ));
+                            } else {
+                                todo!("handle error")
+                            }
+                        }
+                        _tag => todo!("handle {:?}", e),
+                    }
+                }
+                Event::Start(e) => {
+                    log::debug!("read Start={:?}", e);
+                    match e.name().as_ref() {
+                        b"citation" => {
+                            log::trace!("found 'fact'");
+                            // let citation =
+                            //     SourceCitation::deserialize_xml_with_start(deserializer, &e)?;
+                            // agent.add_citation(citation);
+                        }
+                        b"name" => {
+                            log::trace!("found 'name'");
+                            if let Event::Text(name_text) =
+                                deserializer.read_event_into(&mut buf)?
+                            {
+                                agent.add_name(name_text.unescape()?.as_ref().into());
+                            }
+                        }
+                        b"title" => {
+                            log::trace!("found 'title'");
+                            if let Event::Text(e_title) = deserializer.read_event_into(&mut buf)? {
+                                // agent.add_title(e_title.unescape()?.into());
+                            }
+                        }
+                        _tag => todo!("handle {:?}", e),
+                    }
+                }
+                Event::End(e) => match e.name().as_ref() {
+                    b"agent" => {
+                        log::trace!("found end of 'agent' returning ...");
+                        break;
+                    }
+                    _tag => log::trace!("skipping '{:?}' ...", e),
+                },
+                e => {
+                    log::trace!("got: {:?} skipping ...", e);
+                }
+            }
+        }
+        log::debug!("agent = {:?}", agent);
+        Ok(agent)
     }
 }

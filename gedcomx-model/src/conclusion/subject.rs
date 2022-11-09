@@ -5,12 +5,30 @@ use crate::{
     source::SourceReference,
 };
 use quick_xml::events::{BytesEnd, BytesStart, Event};
-use std::io;
+use serde::Deserializer;
+use std::{borrow::Cow, io};
 
 pub fn is_default<T: Default + PartialEq>(t: &T) -> bool {
     t == &T::default()
 }
-#[derive(Debug, serde::Deserialize, serde::Serialize)]
+pub fn deserialize_bool<'de, D>(deserializer: D) -> Result<bool, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    use serde::Deserialize;
+
+    let s: Cow<String> = Deserialize::deserialize(deserializer)?;
+
+    match s.as_str() {
+        "true" => Ok(true),
+        "false" => Ok(false),
+        _ => Err(serde::de::Error::unknown_variant(
+            s.as_str(),
+            &["true", "false"],
+        )),
+    }
+}
+#[derive(Debug, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct Subject {
     #[serde(default, skip_serializing_if = "is_default")]
     extracted: bool,
@@ -75,6 +93,10 @@ impl Subject {
 }
 
 impl Subject {
+    pub fn set_extracted(&mut self, yes: bool) {
+        self.extracted = yes;
+    }
+
     // pub fn set_id(&mut self, id: String) {
     //     self.id = id;
     // }

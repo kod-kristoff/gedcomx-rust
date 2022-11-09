@@ -1,3 +1,4 @@
+use deserx::DeserializeXml;
 use quick_xml::events::{BytesEnd, BytesStart, BytesText, Event};
 
 use crate::{
@@ -9,7 +10,7 @@ use crate::{
 
 /// An abstract document that contains derived (conclusionary) text -- for example, a transcription or researcher analysis.
 
-#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct Document {
     text: String,
     id: String,
@@ -76,8 +77,60 @@ impl SerializeXml for Document {
     }
 }
 
+impl DeserializeXml for Document {
+    fn deserialize_xml_with_start<'de, R: std::io::BufRead>(
+        deserializer: &mut quick_xml::Reader<R>,
+        start: &quick_xml::events::BytesStart<'de>,
+    ) -> Result<Self, quick_xml::Error> {
+        let mut buf = Vec::new();
+        let mut document = Self::new();
+
+        if let Some(id) = start.try_get_attribute("id")? {
+            document.set_id(id.unescape_value()?.into());
+        }
+        loop {
+            match deserializer.read_event_into(&mut buf)? {
+                Event::End(e) => {
+                    log::trace!("got End={:?}", e);
+                    match e.name().as_ref() {
+                        b"document" => {
+                            log::trace!("found end of 'document', returning ...");
+                            break;
+                        }
+                        _tag => log::trace!("found End={:?}, skipping ...", e),
+                    }
+                }
+                Event::Start(e) => {
+                    log::trace!("got Start={:?}", e);
+                    match e.name().as_ref() {
+                        b"text" => {
+                            log::trace!("found 'text', reading ...");
+                            if let Event::Text(text) = deserializer.read_event_into(&mut buf)? {
+                                document.set_text(text.unescape()?.into());
+                            }
+                        }
+                        _tag => todo!("handle Start={:?}", e),
+                    }
+                }
+                Event::Text(e) => log::trace!("got Text={:?}, skipping ...", e),
+                e => {
+                    log::trace!("got {:?}", e);
+                    todo!("handle {:?}", e)
+                }
+            }
+        }
+        log::debug!("document={:?}", document);
+        Ok(document)
+    }
+}
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
 pub struct DocumentReference(ResourceReference);
+
+impl DocumentReference {
+    pub fn new(reference: String) -> Self {
+        Self(ResourceReference::with_resource(reference))
+    }
+}
 
 impl From<&Document> for DocumentReference {
     fn from(doc: &Document) -> Self {

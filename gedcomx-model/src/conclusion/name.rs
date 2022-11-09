@@ -1,9 +1,10 @@
+use deserx::DeserializeXml;
 use quick_xml::events::{BytesEnd, BytesStart, Event};
 
 use crate::{conclusion::NameForm, ser::SerializeXml, types::NamePartType};
 
 /// A name conclusion
-#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Name {
     name_forms: Vec<NameForm>,
@@ -20,12 +21,15 @@ impl Name {
 // Builder lite
 impl Name {
     pub fn name_form(mut self, name_form: NameForm) -> Self {
-        self.name_forms.push(name_form);
+        self.add_name_form(name_form);
         self
     }
 }
 
 impl Name {
+    pub fn add_name_form(&mut self, name_form: NameForm) {
+        self.name_forms.push(name_form);
+    }
     pub fn get_part(&self, part: NamePartType) -> Option<&str> {
         None
     }
@@ -53,6 +57,85 @@ impl SerializeXml for Name {
         }
         ser.write_event(Event::End(BytesEnd::new(self.tag())))?;
         Ok(())
+    }
+}
+impl DeserializeXml for Name {
+    fn deserialize_xml_with_start<'de, R: std::io::BufRead>(
+        deserializer: &mut quick_xml::Reader<R>,
+        start: &quick_xml::events::BytesStart<'de>,
+    ) -> Result<Self, quick_xml::Error> {
+        let mut buf = Vec::new();
+        // let attr = start.try_get_attribute("id")?;
+        // let id: String = if let Some(id) = attr {
+        //     id.unescape_value()?.into()
+        // } else {
+        //     todo!("handle no 'id'")
+        // };
+        let mut name = Self::new();
+        // let attr = start.try_get_attribute("extracted")?;
+        // let extracted = if let Some(extracted) = attr {
+        //     match extracted.unescape_value()?.as_ref() {
+        //         "true" | "1" => true,
+        //         _ => false,
+        //     }
+        // } else {
+        //     false
+        // };
+        // name.set_extracted(extracted);
+        loop {
+            match deserializer.read_event_into(&mut buf)? {
+                Event::Empty(e) => {
+                    log::debug!("read Empty={:?}", e);
+                    match e.name().as_ref() {
+                        b"gender" => {
+                            let attr = e.try_get_attribute("type")?;
+                            if let Some(value) = attr {
+                                // name.set_gender(Gender::from_qname_uri(
+                                //     value.unescape_value()?.as_ref(),
+                                // ));
+                            } else {
+                                todo!("handle error")
+                            }
+                        }
+                        b"source" => {
+                            let attr = e.try_get_attribute("description")?;
+                            if let Some(source) = attr {
+                                // name.add_source(SourceReference::new(
+                                //     Uri::new(source.unescape_value()?.to_string()),
+                                //     String::new(),
+                                // ));
+                            } else {
+                                todo!("handle error")
+                            }
+                        }
+                        _tag => todo!("handle {:?}", e),
+                    }
+                }
+                Event::Start(e) => {
+                    log::debug!("read Start={:?}", e);
+                    match e.name().as_ref() {
+                        b"nameForm" => {
+                            log::trace!("found 'name'");
+                            let name_form = NameForm::deserialize_xml_with_start(deserializer, &e)?;
+                            name.add_name_form(name_form);
+                        }
+                        _tag => todo!("handle {:?}", e),
+                    }
+                }
+                Event::End(e) => match e.name().as_ref() {
+                    b"name" => {
+                        log::trace!("found end of 'name' returning ...");
+                        break;
+                    }
+                    _tag => log::trace!("skipping '{:?}' ...", e),
+                },
+                e => {
+                    log::trace!("got: {:?} skipping ...", e);
+                }
+            }
+        }
+        log::debug!("name = {:?}", name);
+        Ok(name)
     }
 }
 #[cfg(test)]

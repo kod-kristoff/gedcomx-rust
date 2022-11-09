@@ -32,3 +32,9 @@ impl SerializeXml for SourceReference {
         Ok(())
     }
 }
+
+impl PartialEq for SourceReference {
+    fn eq(&self, other: &Self) -> bool {
+        self.description == other.description
+    }
+}

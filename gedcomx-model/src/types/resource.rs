@@ -2,7 +2,7 @@ use crate::{common::Uri, ser::SerializeXml};
 use quick_xml::events::{BytesStart, Event};
 
 /// Enumeration of high-level genealogical resource types.
-#[derive(Debug, Clone, Copy, serde::Deserialize, serde::Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, serde::Deserialize, serde::Serialize)]
 pub enum ResourceType {
     /// A historical record.
     Record,

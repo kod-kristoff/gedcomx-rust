@@ -2,4 +2,4 @@ pub mod attribution;
 mod gedcomx;
 
 pub use attribution::Attribution;
-pub use gedcomx::GedcomX;
+pub use gedcomx::{verify_gedcomx, GedcomX};

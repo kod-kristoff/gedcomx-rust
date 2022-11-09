@@ -9,7 +9,7 @@ use quick_xml::events::{BytesEnd, BytesStart, Event};
 use std::io;
 
 #[serde_with::skip_serializing_none]
-#[derive(Debug, serde::Deserialize, serde::Serialize)]
+#[derive(Debug, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct Conclusion {
     analysis: Option<ResourceReference>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
