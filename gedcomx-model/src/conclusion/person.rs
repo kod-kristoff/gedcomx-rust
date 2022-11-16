@@ -1,9 +1,10 @@
 use crate::{
-    common::{EvidenceReference, ResourceReference, Uri},
+    common::{EvidenceReference, IriRef, ResourceReference, Uri},
     conclusion::{Fact, Name},
     ser::{SerError, SerializeXml},
     source::SourceReference,
     types::Gender,
+    Result,
 };
 use deserx::DeserializeXml;
 use quick_xml::events::{BytesEnd, BytesStart, Event};
@@ -21,11 +22,11 @@ pub struct Person {
     gender: Option<Gender>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     facts: Vec<Fact>,
-    id: String,
+    id: IriRef,
 }
 
 impl Person {
-    pub fn new(id: String) -> Self {
+    pub fn new(id: IriRef) -> Self {
         Self {
             id,
             subject: Subject::default(),
@@ -34,8 +35,8 @@ impl Person {
             facts: Vec::new(),
         }
     }
-    pub fn with_id<S: Into<String>>(id: S) -> Self {
-        Self::new(id.into())
+    pub fn with_id<S: Into<String>>(id: S) -> Result<Self> {
+        Ok(Self::new(IriRef::parse(id.into())?))
     }
 }
 
@@ -75,9 +76,9 @@ impl Person {
 }
 
 impl Person {
-    pub fn set_id(&mut self, id: String) {
-        self.id = id;
-    }
+    // pub fn set_id(&mut self, id: String) {
+    //     self.id = id;
+    // }
     pub fn set_gender(&mut self, gender: Gender) {
         self.gender = Some(gender);
     }
@@ -105,12 +106,12 @@ impl Person {
 
 impl From<&Person> for EvidenceReference {
     fn from(p: &Person) -> Self {
-        EvidenceReference::with_resource(format!("#{}", p.id))
+        EvidenceReference::new(p.id.clone())
     }
 }
 impl From<&Person> for ResourceReference {
     fn from(p: &Person) -> Self {
-        ResourceReference::with_resource(format!("#{}", p.id))
+        ResourceReference::new(p.id.clone())
     }
 }
 impl SerializeXml for Person {
@@ -118,7 +119,10 @@ impl SerializeXml for Person {
         "person"
     }
 
-    fn serialize_xml<W: io::Write>(&self, ser: &mut quick_xml::Writer<W>) -> Result<(), SerError> {
+    fn serialize_xml<W: io::Write>(
+        &self,
+        ser: &mut quick_xml::Writer<W>,
+    ) -> std::result::Result<(), SerError> {
         let mut root = BytesStart::new(self.tag());
         if self.is_extracted() {
             root.push_attribute(("extracted", self.subject.extracted_as_str()));
@@ -146,7 +150,7 @@ impl DeserializeXml for Person {
     fn deserialize_xml_with_start<'de, R: std::io::BufRead>(
         deserializer: &mut quick_xml::Reader<R>,
         start: &quick_xml::events::BytesStart<'de>,
-    ) -> Result<Self, quick_xml::Error> {
+    ) -> std::result::Result<Self, quick_xml::Error> {
         //     <R: std::io::BufRead>(
         //     deserializer: &mut quick_xml::Reader<R>,
         // ) -> Result<Self, quick_xml::Error> {
@@ -160,7 +164,7 @@ impl DeserializeXml for Person {
         } else {
             todo!("handle no 'id'")
         };
-        let mut person = Self::new(id);
+        let mut person = Self::new(IriRef::parse(id).expect("iri"));
         let attr = start.try_get_attribute("extracted")?;
         let extracted = if let Some(extracted) = attr {
             match extracted.unescape_value()?.as_ref() {
@@ -180,7 +184,7 @@ impl DeserializeXml for Person {
                             let attr = e.try_get_attribute("resource")?;
                             if let Some(value) = attr {
                                 person.set_analysis(DocumentReference::new(
-                                    value.unescape_value()?.into(),
+                                    IriRef::parse(value.unescape_value()?.into()).expect("iri"),
                                 ));
                             } else {
                                 todo!("handle error")
@@ -189,11 +193,9 @@ impl DeserializeXml for Person {
                         b"evidence" => {
                             let attr = e.try_get_attribute("resource")?;
                             if let Some(value) = attr {
-                                person
-                                    .subject
-                                    .add_evidence(EvidenceReference::with_resource(
-                                        value.unescape_value()?.into(),
-                                    ));
+                                person.subject.add_evidence(EvidenceReference::new(
+                                    IriRef::parse(value.unescape_value()?.into()).expect("iri"),
+                                ));
                             } else {
                                 todo!("handle error")
                             }
@@ -212,7 +214,8 @@ impl DeserializeXml for Person {
                             let attr = e.try_get_attribute("description")?;
                             if let Some(source) = attr {
                                 person.add_source(SourceReference::new(
-                                    Uri::new(source.unescape_value()?.to_string()),
+                                    IriRef::parse(source.unescape_value()?.to_string())
+                                        .expect("iri"),
                                     String::new(),
                                 ));
                             } else {

@@ -36,7 +36,7 @@
           }
         }
       ],
-      "id": "P-1"
+      "id": "#P-1"
     },
     {
       "extracted": true,
@@ -60,7 +60,7 @@
           "type": "http://gedcomx.org/Occupation"
         }
       ],
-      "id": "P-2"
+      "id": "#P-2"
     },
     {
       "extracted": true,
@@ -78,7 +78,7 @@
           ]
         }
       ],
-      "id": "P-3"
+      "id": "#P-3"
     },
     {
       "evidence": [
@@ -89,7 +89,7 @@
       "analysis": {
         "resource": "#D-1"
       },
-      "id": "C-1"
+      "id": "#C-1"
     }
   ],
   "relationships": [
@@ -129,7 +129,7 @@
       "repository": {
         "resource": "#A-2"
       },
-      "id": "S-1"
+      "id": "#S-1"
     }
   ],
   "agents": [
@@ -144,7 +144,7 @@
           "resource": "mailto:example@example.org"
         }
       ],
-      "id": "A-1"
+      "id": "#A-1"
     },
     {
       "names": [
@@ -152,13 +152,13 @@
           "value": "General Registry Office, Southport"
         }
       ],
-      "id": "A-2"
+      "id": "#A-2"
     }
   ],
   "documents": [
     {
       "text": "...Jane Doe's analysis document...",
-      "id": "D-1"
+      "id": "#D-1"
     }
   ]
 }

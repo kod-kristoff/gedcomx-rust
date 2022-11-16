@@ -1,5 +1,5 @@
 use crate::{
-    common::{EvidenceReference, ResourceReference},
+    common::{EvidenceReference, IriRef, ResourceReference},
     conclusion::{Fact, Name},
     ser::{xml, SerError, SerializeXml},
     types::{Gender, RelationshipType},
@@ -159,8 +159,8 @@ impl DeserializeXml for Relationship {
                         b"person1" => {
                             let attr = e.try_get_attribute("resource")?;
                             if let Some(value) = attr {
-                                relationship.set_person1(ResourceReference::with_resource(
-                                    value.unescape_value()?.into(),
+                                relationship.set_person1(ResourceReference::new(
+                                    IriRef::parse(value.unescape_value()?.into()).expect("iri"),
                                 ));
                             } else {
                                 todo!("handle error")
@@ -169,8 +169,8 @@ impl DeserializeXml for Relationship {
                         b"person2" => {
                             let attr = e.try_get_attribute("resource")?;
                             if let Some(value) = attr {
-                                relationship.set_person2(ResourceReference::with_resource(
-                                    value.unescape_value()?.into(),
+                                relationship.set_person2(ResourceReference::new(
+                                    IriRef::parse(value.unescape_value()?.into()).expect("iri"),
                                 ));
                             } else {
                                 todo!("handle error")

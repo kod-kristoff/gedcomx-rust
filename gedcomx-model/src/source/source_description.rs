@@ -5,7 +5,7 @@ use serde::{Deserialize, Deserializer, Serializer};
 
 use super::{SourceCitation, SourceReference};
 use crate::{
-    common::{Date, DateTime, ResourceReference, TextValue, Uri},
+    common::{Date, DateTime, IriRef, ResourceReference, TextValue, Uri},
     ser::{xml, SerError, SerializeXml},
     types::ResourceType,
 };
@@ -67,14 +67,14 @@ pub struct SourceDescription {
     // #[serde_as(as = "TimestampMilliSeconds<i64>")]
     created: Option<DateTime>,
     repository: Option<ResourceReference>,
-    #[serde(default)]
-    id: String,
+    // #[serde(default)]
+    id: IriRef,
 }
 
 impl SourceDescription {
-    pub fn new() -> Self {
+    pub fn new(id: IriRef) -> Self {
         Self {
-            id: String::new(),
+            id,
             names: Vec::new(),
             titles: Vec::new(),
             citations: Vec::new(),
@@ -86,10 +86,10 @@ impl SourceDescription {
 }
 
 impl SourceDescription {
-    pub fn id<S: Into<String>>(mut self, id: S) -> Self {
-        self.set_id(id.into());
-        self
-    }
+    // pub fn id<S: Into<String>>(mut self, id: S) -> Self {
+    //     self.set_id(id.into());
+    //     self
+    // }
 
     pub fn repository<S: Into<ResourceReference>>(mut self, repository: S) -> Self {
         self.set_repository(repository.into());
@@ -122,9 +122,9 @@ impl SourceDescription {
     }
 }
 impl SourceDescription {
-    pub fn set_id(&mut self, id: String) {
-        self.id = id;
-    }
+    // pub fn set_id(&mut self, id: String) {
+    //     self.id = id;
+    // }
     pub fn set_repository(&mut self, repository: ResourceReference) {
         self.repository = Some(repository);
     }
@@ -150,13 +150,13 @@ impl SourceDescription {
 
 impl From<&SourceDescription> for ResourceReference {
     fn from(source: &SourceDescription) -> Self {
-        ResourceReference::with_resource(format!("#{}", &source.id))
+        ResourceReference::new(source.id.clone())
     }
 }
 
 impl From<&SourceDescription> for SourceReference {
     fn from(source: &SourceDescription) -> Self {
-        Self::new(Uri::new(format!("#{}", &source.id)), source.id.clone())
+        Self::new(source.id.clone(), source.id.clone().into_inner())
     }
 }
 impl SerializeXml for SourceDescription {
@@ -198,7 +198,6 @@ impl DeserializeXml for SourceDescription {
         start: &quick_xml::events::BytesStart<'de>,
     ) -> Result<Self, quick_xml::Error> {
         let mut buf = Vec::new();
-        let mut source_description = Self::new();
         let attr = start.try_get_attribute("id")?;
         let id: String = if let Some(id) = attr {
             id.unescape_value()?.into()
@@ -208,7 +207,7 @@ impl DeserializeXml for SourceDescription {
         } else {
             todo!("handle no 'id'")
         };
-        source_description.set_id(id);
+        let mut source_description = Self::new(IriRef::parse(id).expect("parsing iri"));
         let attr = start.try_get_attribute("resourceType")?;
         let resource_type = if let Some(resource_type) = attr {
             Uri::new(resource_type.unescape_value()?.into())
@@ -234,11 +233,10 @@ impl DeserializeXml for SourceDescription {
                         b"repository" => {
                             let attr = e.try_get_attribute("resource")?;
                             if let Some(value) = attr {
-                                source_description.set_repository(
-                                    ResourceReference::with_resource(
-                                        value.unescape_value()?.into(),
-                                    ),
-                                );
+                                source_description.set_repository(ResourceReference::new(
+                                    IriRef::parse(value.unescape_value()?.into())
+                                        .expect("parsing iri"),
+                                ));
                             } else {
                                 todo!("handle error")
                             }

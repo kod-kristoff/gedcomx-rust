@@ -1,17 +1,17 @@
 use crate::{
-    common::Uri,
+    common::IriRef,
     ser::{xml, SerializeXml},
 };
 
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
 pub struct SourceReference {
-    description: Uri,
+    description: IriRef,
     #[serde(default, skip_serializing)]
     description_id: String,
 }
 
 impl SourceReference {
-    pub fn new(description: Uri, description_id: String) -> Self {
+    pub fn new(description: IriRef, description_id: String) -> Self {
         Self {
             description,
             description_id,

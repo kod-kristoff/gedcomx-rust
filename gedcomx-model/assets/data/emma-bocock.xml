@@ -4,7 +4,7 @@
         <contributor resource="#A-1"/>
         <modified>2014-03-07T07:00:00+00:00</modified>
     </attribution>
-    <person extracted="true" id="P-1">
+    <person extracted="true" id="#P-1">
         <source description="#S-1"/>
         <gender type="http://gedcomx.org/Female"/>
         <name>
@@ -21,7 +21,7 @@
             </place>
         </fact>
     </person>
-    <person extracted="true" id="P-2">
+    <person extracted="true" id="#P-2">
         <source description="#S-1"/>
         <name>
             <nameForm>
@@ -32,7 +32,7 @@
             <value>Toll Collector</value>
         </fact>
     </person>
-    <person extracted="true" id="P-3">
+    <person extracted="true" id="#P-3">
         <source description="#S-1"/>
         <name>
             <nameForm>
@@ -40,7 +40,7 @@
             </nameForm>
         </name>
     </person>
-    <person id="C-1">
+    <person id="#C-1">
         <analysis resource="#D-1"/>
         <evidence resource="#P-1"/>
     </person>
@@ -52,7 +52,7 @@
         <person1 resource="#P-3"/>
         <person2 resource="#P-1"/>
     </relationship>
-    <sourceDescription resourceType="http://gedcomx.org/PhysicalArtifact" id="S-1">
+    <sourceDescription resourceType="http://gedcomx.org/PhysicalArtifact" id="#S-1">
         <citation>
             <value>England, birth certificate for Emma Bocock, born 23 July 1843; citing 1843 Birth in District and Sub-district of Ecclesall-Bierlow in the County of York, 303; General Registry Office, Southport.</value>
         </citation>
@@ -60,14 +60,14 @@
         <created>1843-07-27T07:00:00+00:00</created>
         <repository resource="#A-2"/>
     </sourceDescription>
-    <agent id="A-1">
+    <agent id="#A-1">
         <email resource="mailto:example@example.org"/>
         <name>Jane Doe</name>
     </agent>
-    <agent id="A-2">
+    <agent id="#A-2">
         <name>General Registry Office, Southport</name>
     </agent>
-    <document id="D-1">
+    <document id="#D-1">
         <text>...Jane Doe's analysis document...</text>
     </document>
 </gedcomx>

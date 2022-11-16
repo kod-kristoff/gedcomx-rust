@@ -1,6 +1,8 @@
 use quick_xml::events::{BytesEnd, BytesStart, Event};
 
+use crate::common::IriRef;
 use crate::ser::SerializeXml;
+use crate::Result;
 
 use super::Reference;
 
@@ -11,16 +13,16 @@ pub struct EvidenceReference {
 }
 
 impl EvidenceReference {
-    pub fn new() -> Self {
+    pub fn new(iri: IriRef) -> Self {
         Self {
-            reference: Reference::new(),
+            reference: Reference::new(iri),
         }
     }
-    pub fn with_resource(resource: String) -> Self {
-        Self {
-            reference: Reference::with_resource(resource),
-        }
-    }
+    // pub fn with_resource(resource: String) -> Self {
+    //     Self {
+    //         reference: Reference::with_resource(resource),
+    //     }
+    // }
 }
 
 impl EvidenceReference {
@@ -37,7 +39,7 @@ impl SerializeXml for EvidenceReference {
     fn serialize_xml<W: std::io::Write>(
         &self,
         ser: &mut quick_xml::Writer<W>,
-    ) -> Result<(), crate::ser::SerError> {
+    ) -> std::result::Result<(), crate::ser::SerError> {
         let mut elem = BytesStart::new(self.tag());
         elem.push_attribute(("resource", self.resource()));
         ser.write_event(Event::Empty(elem))?;

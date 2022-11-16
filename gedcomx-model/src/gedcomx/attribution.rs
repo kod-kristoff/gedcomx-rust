@@ -1,4 +1,4 @@
-use crate::common::{DateTime, ResourceReference};
+use crate::common::{DateTime, IriRef, ResourceReference};
 use crate::ser::{SerError, SerializeXml, XmlSerializer};
 use chrono::Utc;
 use deserx::DeserializeXml;
@@ -9,7 +9,7 @@ use std::io;
 #[serde_with::serde_as]
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct Attribution {
-    contributor: ResourceReference,
+    contributor: Option<ResourceReference>,
     #[serde_as(as = "TimestampMilliSeconds")]
     modified: DateTime,
 }
@@ -17,7 +17,7 @@ pub struct Attribution {
 impl Attribution {
     pub fn new() -> Self {
         Self {
-            contributor: ResourceReference::new(),
+            contributor: None,
             modified: Utc::now(),
         }
     }
@@ -30,7 +30,7 @@ impl Attribution {
     }
 
     pub fn set_contributor(&mut self, contributor: ResourceReference) {
-        self.contributor = contributor;
+        self.contributor = Some(contributor);
     }
 
     pub fn modified(mut self, modified: DateTime) -> Self {
@@ -79,7 +79,7 @@ impl SerializeXml for Attribution {
         ser.write_event(Event::Start(elem))?;
 
         let mut contributor = BytesStart::new("contributor");
-        contributor.push_attribute(("resource", self.contributor.resource()));
+        contributor.push_attribute(("resource", self.contributor.as_ref().unwrap().resource()));
         ser.write_event(Event::Empty(contributor))?;
 
         ser.write_event(Event::Start(BytesStart::new("modified")))?;
@@ -104,8 +104,9 @@ impl DeserializeXml for Attribution {
                         b"contributor" => {
                             let attr = e.try_get_attribute("resource")?;
                             if let Some(resource) = attr {
-                                attribution.set_contributor(ResourceReference::with_resource(
-                                    resource.unescape_value()?.into(),
+                                attribution.set_contributor(ResourceReference::new(
+                                    IriRef::parse(resource.unescape_value()?.into())
+                                        .expect("parsing iri"),
                                 ));
                             }
                         }

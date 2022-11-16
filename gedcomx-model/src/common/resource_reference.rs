@@ -1,15 +1,19 @@
-use crate::common::Reference;
+use crate::common::{IriRef, Reference};
+use crate::Result;
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct ResourceReference(Reference);
 
 impl ResourceReference {
-    pub fn new() -> Self {
-        Self(Reference::new())
+    pub fn new(iri: IriRef) -> Self {
+        Self(Reference::new(iri))
     }
-    pub fn with_resource(resource: String) -> Self {
-        Self(Reference::with_resource(resource))
+    pub fn try_new(iri: String) -> Result<Self> {
+        Ok(Self(Reference::try_new(iri)?))
     }
+    // pub fn with_resource(resource: String) -> Self {
+    //     Self(Reference::with_resource(resource))
+    // }
 }
 
 impl ResourceReference {

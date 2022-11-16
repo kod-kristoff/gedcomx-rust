@@ -2,7 +2,7 @@ use deserx::DeserializeXml;
 use quick_xml::events::{BytesEnd, BytesStart, BytesText, Event};
 
 use crate::{
-    common::ResourceReference,
+    common::{IriRef, ResourceReference},
     conclusion::NameForm,
     ser::{xml, SerializeXml},
     types::NamePartType,
@@ -13,13 +13,13 @@ use crate::{
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct Document {
     text: String,
-    id: String,
+    id: IriRef,
 }
 
 impl Document {
-    pub fn new() -> Self {
+    pub fn new(id: IriRef) -> Self {
         Self {
-            id: String::new(),
+            id,
             text: String::new(),
         }
     }
@@ -27,10 +27,10 @@ impl Document {
 
 // Builder lite
 impl Document {
-    pub fn id<S: Into<String>>(mut self, id: S) -> Self {
-        self.set_id(id.into());
-        self
-    }
+    // pub fn id<S: Into<String>>(mut self, id: S) -> Self {
+    //     self.set_id(id.into());
+    //     self
+    // }
     pub fn text<S: Into<String>>(mut self, text: S) -> Self {
         self.set_text(text.into());
         self
@@ -38,9 +38,9 @@ impl Document {
 }
 
 impl Document {
-    pub fn set_id(&mut self, id: String) {
-        self.id = id;
-    }
+    // pub fn set_id(&mut self, id: String) {
+    //     self.id = id;
+    // }
     pub fn set_text(&mut self, text: String) {
         self.text = text;
     }
@@ -83,11 +83,13 @@ impl DeserializeXml for Document {
         start: &quick_xml::events::BytesStart<'de>,
     ) -> Result<Self, quick_xml::Error> {
         let mut buf = Vec::new();
-        let mut document = Self::new();
 
-        if let Some(id) = start.try_get_attribute("id")? {
-            document.set_id(id.unescape_value()?.into());
-        }
+        let id = if let Some(id) = start.try_get_attribute("id")? {
+            IriRef::parse(id.unescape_value()?.into()).expect("iri")
+        } else {
+            todo!("handle no id")
+        };
+        let mut document = Self::new(id);
         loop {
             match deserializer.read_event_into(&mut buf)? {
                 Event::End(e) => {
@@ -127,14 +129,14 @@ impl DeserializeXml for Document {
 pub struct DocumentReference(ResourceReference);
 
 impl DocumentReference {
-    pub fn new(reference: String) -> Self {
-        Self(ResourceReference::with_resource(reference))
+    pub fn new(reference: IriRef) -> Self {
+        Self(ResourceReference::new(reference))
     }
 }
 
 impl From<&Document> for DocumentReference {
     fn from(doc: &Document) -> Self {
-        Self(ResourceReference::with_resource(format!("#{}", doc.id)))
+        DocumentReference::new(doc.id.clone())
     }
 }
 
