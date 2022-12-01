@@ -11,7 +11,7 @@ use std::io;
 use super::{DocumentReference, Subject};
 
 #[serde_with::skip_serializing_none]
-#[derive(Debug, PartialEq, serde::Deserialize, serde::Serialize)]
+#[derive(Clone, Debug, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct Relationship {
     // #[serde(default)]
     // id: Option<String>,

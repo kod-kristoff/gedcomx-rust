@@ -12,7 +12,7 @@ use std::io;
 
 use super::{DocumentReference, Subject};
 
-#[derive(Debug, PartialEq, serde::Deserialize, serde::Serialize)]
+#[derive(Clone, Debug, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct Person {
     #[serde(flatten)]
     subject: Subject,

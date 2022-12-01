@@ -8,7 +8,7 @@ use deserx::DeserializeXml;
 use quick_xml::events::{BytesEnd, BytesStart, Event};
 use std::io;
 
-#[derive(Debug, PartialEq, serde::Deserialize, serde::Serialize)]
+#[derive(Clone, Debug, PartialEq, serde::Deserialize, serde::Serialize)]
 #[serde(rename = "gedcomx", rename_all = "camelCase")]
 pub struct GedcomX {
     attribution: Option<Attribution>,

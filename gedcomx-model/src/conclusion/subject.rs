@@ -28,7 +28,7 @@ where
         )),
     }
 }
-#[derive(Debug, PartialEq, serde::Deserialize, serde::Serialize)]
+#[derive(Clone, Debug, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct Subject {
     #[serde(default, skip_serializing_if = "is_default")]
     extracted: bool,
