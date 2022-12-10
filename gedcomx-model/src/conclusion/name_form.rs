@@ -34,6 +34,16 @@ impl NameForm {
     }
 }
 
+impl NameForm {
+    pub fn get_full_text(&self) -> &str {
+        self.full_text.as_str()
+    }
+
+    pub fn get_lang(&self) -> &str {
+        self.lang.as_str()
+    }
+}
+
 impl SerializeXml for NameForm {
     fn tag(&self) -> &str {
         "nameForm"

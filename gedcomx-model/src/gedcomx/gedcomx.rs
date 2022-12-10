@@ -88,6 +88,12 @@ impl GedcomX {
     }
 }
 
+impl GedcomX {
+    pub fn persons(&self) -> &[Person] {
+        self.persons.as_slice()
+    }
+}
+
 impl SerializeXml for GedcomX {
     fn tag(&self) -> &str {
         "gedcomx"

@@ -102,6 +102,14 @@ impl Person {
     pub fn add_fact(&mut self, fact: Fact) {
         self.facts.push(fact);
     }
+
+    pub fn facts(&self) -> &[Fact] {
+        self.facts.as_slice()
+    }
+
+    pub fn names(&self) -> &[Name] {
+        self.names.as_slice()
+    }
 }
 
 impl From<&Person> for EvidenceReference {

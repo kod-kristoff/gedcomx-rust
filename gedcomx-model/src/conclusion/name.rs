@@ -33,6 +33,10 @@ impl Name {
     pub fn get_part(&self, part: NamePartType) -> Option<&str> {
         None
     }
+
+    pub fn name_forms(&self) -> &[NameForm] {
+        self.name_forms.as_slice()
+    }
 }
 
 impl From<&str> for Name {
