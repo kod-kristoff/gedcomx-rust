@@ -63,6 +63,12 @@ impl Agent {
     pub fn get_id(&self) -> &str {
         self.id.as_str()
     }
+    pub fn names(&self) -> &[TextValue] {
+        self.names.as_slice()
+    }
+    pub fn emails(&self) -> &[ResourceReference] {
+        self.emails.as_slice()
+    }
 }
 
 impl From<&Agent> for ResourceReference {

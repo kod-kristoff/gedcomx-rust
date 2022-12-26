@@ -110,6 +110,9 @@ impl Person {
     pub fn names(&self) -> &[Name] {
         self.names.as_slice()
     }
+    pub fn id(&self) -> &IriRef {
+        &self.id
+    }
 }
 
 impl From<&Person> for EvidenceReference {
