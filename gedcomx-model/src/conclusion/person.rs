@@ -114,11 +114,18 @@ impl Person {
         &self.id
     }
 
-    pub fn first_name_of_type(&self, _name_type: NameType) -> Option<u32> {
+    pub fn first_name_of_type(&self, name_type: NameType) -> Option<&Name> {
         if self.names.is_empty() {
             return None;
         }
-        todo!("find")
+        let name_type = Some(&name_type);
+
+        for name in &self.names {
+            if name.get_type() == name_type {
+                return Some(name);
+            }
+        }
+        None
     }
 }
 
@@ -282,10 +289,26 @@ mod tests {
 
     mod first_name_of_type {
         use super::*;
+
         #[test]
         fn no_names_returns_none() {
             let person = Person::with_id("P-1").unwrap();
             assert_eq!(person.first_name_of_type(NameType::FormalName), None);
+        }
+
+        #[test]
+        fn name_wo_type_returns_none() {
+            let person = Person::with_id("P-1").unwrap().name("Jane Doe");
+            assert_eq!(person.first_name_of_type(NameType::FormalName), None);
+        }
+
+        #[test]
+        fn name_w_type_returns_somee() {
+            let mut person = Person::with_id("P-1").unwrap();
+            let mut name: Name = "Jane Doe".into();
+            name.set_type(Some(NameType::FormalName));
+            person.add_name(name.clone());
+            assert_eq!(person.first_name_of_type(NameType::FormalName), Some(&name));
         }
     }
     //     #[test]

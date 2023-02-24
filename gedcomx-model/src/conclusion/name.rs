@@ -1,20 +1,32 @@
 use deserx::DeserializeXml;
 use quick_xml::events::{BytesEnd, BytesStart, Event};
 
-use crate::{conclusion::NameForm, ser::SerializeXml, types::NamePartType};
+use crate::{
+    conclusion::NameForm,
+    ser::SerializeXml,
+    types::{NamePartType, NameType},
+};
 
 /// A name conclusion
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Name {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    name_type: Option<NameType>,
     name_forms: Vec<NameForm>,
 }
 
+impl Default for Name {
+    fn default() -> Self {
+        Self {
+            name_type: None,
+            name_forms: Vec::default(),
+        }
+    }
+}
 impl Name {
     pub fn new() -> Self {
-        Self {
-            name_forms: Vec::new(),
-        }
+        Self::default()
     }
 }
 
@@ -36,6 +48,14 @@ impl Name {
 
     pub fn name_forms(&self) -> &[NameForm] {
         self.name_forms.as_slice()
+    }
+
+    pub fn get_type(&self) -> Option<&NameType> {
+        self.name_type.as_ref()
+    }
+
+    pub fn set_type(&mut self, name_type: Option<NameType>) {
+        self.name_type = name_type;
     }
 }
 
