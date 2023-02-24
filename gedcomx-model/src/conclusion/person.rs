@@ -1,9 +1,9 @@
 use crate::{
-    common::{EvidenceReference, IriRef, ResourceReference, Uri},
+    common::{EvidenceReference, IriRef, ResourceReference},
     conclusion::{Fact, Name},
     ser::{SerError, SerializeXml},
     source::SourceReference,
-    types::Gender,
+    types::{Gender, NameType},
     Result,
 };
 use deserx::DeserializeXml;
@@ -112,6 +112,13 @@ impl Person {
     }
     pub fn id(&self) -> &IriRef {
         &self.id
+    }
+
+    pub fn first_name_of_type(&self, name_type: NameType) -> Option<u32> {
+        if self.names.is_empty() {
+            return None;
+        }
+        todo!("find")
     }
 }
 
@@ -268,44 +275,53 @@ impl DeserializeXml for Person {
         Ok(person)
     }
 }
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
 
-//     #[test]
-//     fn deserialize_extracted_from_xml() -> Result<(), Box<dyn std::error::Error>> {
-//         let xml = r##"
-//     <person extracted="true" id="P-1">
-//         <source description="#S-1"/>
-//         <gender type="http://gedcomx.org/Female"/>
-//         <name>
-//             <nameForm>
-//                 <fullText>Emma Bocock</fullText>
-//             </nameForm>
-//         </name>
-//         <fact type="http://gedcomx.org/Birth">
-//             <date>
-//                 <original>23 June 1843</original>
-//             </date>
-//             <place>
-//                 <original>Broadfield Bar, Abbeydale Road, Ecclesall-Bierlow, York, England, United Kingdom</original>
-//             </place>
-//         </fact>
-//     </person>
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-//         "##;
-//         let _person: Person = quick_xml::de::from_str(xml)?;
-//         Ok(())
-//     }
-//     #[test]
-//     fn deserialize_derived_from_xml() -> Result<(), Box<dyn std::error::Error>> {
-//         let xml = r##"
-//     <person id="C-1">
-//         <analysis resource="#D-1"/>
-//         <evidence resource="#P-1"/>
-//     </person>
-//         "##;
-//         let _person: Person = quick_xml::de::from_str(xml)?;
-//         Ok(())
-//     }
-// }
+    mod first_name_of_type {
+        use super::*;
+        #[test]
+        fn no_names_returns_none() {
+            let person = Person::with_id("P-1").unwrap();
+            assert_eq!(person.first_name_of_type(NameType::FormalName), None);
+        }
+    }
+    //     #[test]
+    //     fn deserialize_extracted_from_xml() -> Result<(), Box<dyn std::error::Error>> {
+    //         let xml = r##"
+    //     <person extracted="true" id="P-1">
+    //         <source description="#S-1"/>
+    //         <gender type="http://gedcomx.org/Female"/>
+    //         <name>
+    //             <nameForm>
+    //                 <fullText>Emma Bocock</fullText>
+    //             </nameForm>
+    //         </name>
+    //         <fact type="http://gedcomx.org/Birth">
+    //             <date>
+    //                 <original>23 June 1843</original>
+    //             </date>
+    //             <place>
+    //                 <original>Broadfield Bar, Abbeydale Road, Ecclesall-Bierlow, York, England, United Kingdom</original>
+    //             </place>
+    //         </fact>
+    //     </person>
+
+    //         "##;
+    //         let _person: Person = quick_xml::de::from_str(xml)?;
+    //         Ok(())
+    //     }
+    //     #[test]
+    //     fn deserialize_derived_from_xml() -> Result<(), Box<dyn std::error::Error>> {
+    //         let xml = r##"
+    //     <person id="C-1">
+    //         <analysis resource="#D-1"/>
+    //         <evidence resource="#P-1"/>
+    //     </person>
+    //         "##;
+    //         let _person: Person = quick_xml::de::from_str(xml)?;
+    //         Ok(())
+    //     }
+}
