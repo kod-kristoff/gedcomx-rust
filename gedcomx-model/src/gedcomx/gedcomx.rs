@@ -228,8 +228,8 @@ pub fn verify_gedcomx(a: &GedcomX, b: &GedcomX) -> Result<(), String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use serde::Serialize;
-    use std::error::Error;
+    
+    
 
     // fn gedcomx_record() -> GedcomX {
     //     GedcomX::new().person(Person::new())

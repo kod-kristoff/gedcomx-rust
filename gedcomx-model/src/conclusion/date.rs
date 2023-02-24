@@ -64,7 +64,7 @@ impl SerializeXml for Date {
 impl DeserializeXml for Date {
     fn deserialize_xml_with_start<'de, R: std::io::BufRead>(
         deserializer: &mut quick_xml::Reader<R>,
-        start: &quick_xml::events::BytesStart<'de>,
+        _start: &quick_xml::events::BytesStart<'de>,
     ) -> Result<Self, quick_xml::Error> {
         let mut buf = Vec::new();
         let mut date = Self::new();
@@ -85,7 +85,7 @@ impl DeserializeXml for Date {
                     match e.name().as_ref() {
                         b"gender" => {
                             let attr = e.try_get_attribute("type")?;
-                            if let Some(value) = attr {
+                            if let Some(_value) = attr {
                                 // date.set_gender(Gender::from_qdate_uri(
                                 //     value.unescape_value()?.as_ref(),
                                 // ));
@@ -95,7 +95,7 @@ impl DeserializeXml for Date {
                         }
                         b"source" => {
                             let attr = e.try_get_attribute("description")?;
-                            if let Some(source) = attr {
+                            if let Some(_source) = attr {
                                 // date.add_source(SourceReference::new(
                                 //     Uri::new(source.unescape_value()?.to_string()),
                                 //     String::new(),

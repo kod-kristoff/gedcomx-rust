@@ -1,7 +1,7 @@
 use gedcomx_model::agent::Agent;
 use gedcomx_model::common::{DateTime, IriRef};
 use gedcomx_model::conclusion::{Date, Document, Fact, Person, PlaceReference, Relationship};
-use gedcomx_model::gedcomx::{verify_gedcomx, Attribution};
+use gedcomx_model::gedcomx::{Attribution};
 use gedcomx_model::source::{SourceCitation, SourceDescription};
 use gedcomx_model::types::{FactType, Gender, RelationshipType, ResourceType};
 use gedcomx_model::GedcomX;

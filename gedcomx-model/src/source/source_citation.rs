@@ -64,7 +64,7 @@ impl SerializeXml for SourceCitation {
 impl DeserializeXml for SourceCitation {
     fn deserialize_xml_with_start<'de, R: std::io::BufRead>(
         deserializer: &mut quick_xml::Reader<R>,
-        start: &quick_xml::events::BytesStart<'de>,
+        _start: &quick_xml::events::BytesStart<'de>,
     ) -> Result<Self, quick_xml::Error> {
         let mut buf = Vec::new();
         let mut source_citation = Self::new();
@@ -92,7 +92,7 @@ impl DeserializeXml for SourceCitation {
                     match e.name().as_ref() {
                         b"analysis" => {
                             let attr = e.try_get_attribute("resource")?;
-                            if let Some(value) = attr {
+                            if let Some(_value) = attr {
                                 // source_citation.set_analysis(DocumentReference::new(
                                 //     value.unescape_value()?.into(),
                                 // ));
@@ -102,7 +102,7 @@ impl DeserializeXml for SourceCitation {
                         }
                         b"evidence" => {
                             let attr = e.try_get_attribute("resource")?;
-                            if let Some(value) = attr {
+                            if let Some(_value) = attr {
                                 // source_citation
                                 //     .subject
                                 //     .add_evidence(EvidenceReference::with_resource(
@@ -114,7 +114,7 @@ impl DeserializeXml for SourceCitation {
                         }
                         b"gender" => {
                             let attr = e.try_get_attribute("type")?;
-                            if let Some(value) = attr {
+                            if let Some(_value) = attr {
                                 // source_citation.set_gender(Gender::from_qname_uri(
                                 //     value.unescape_value()?.as_ref(),
                                 // ));
@@ -124,7 +124,7 @@ impl DeserializeXml for SourceCitation {
                         }
                         b"source" => {
                             let attr = e.try_get_attribute("description")?;
-                            if let Some(source) = attr {
+                            if let Some(_source) = attr {
                                 // source_citation.add_source(SourceReference::new(
                                 //     Uri::new(source.unescape_value()?.to_string()),
                                 //     String::new(),

@@ -130,7 +130,7 @@ impl DeserializeXml for Agent {
                     match e.name().as_ref() {
                         b"analysis" => {
                             let attr = e.try_get_attribute("resource")?;
-                            if let Some(value) = attr {
+                            if let Some(_value) = attr {
                                 // agent.set_analysis(DocumentReference::new(
                                 //     value.unescape_value()?.into(),
                                 // ));
@@ -150,7 +150,7 @@ impl DeserializeXml for Agent {
                         }
                         b"gender" => {
                             let attr = e.try_get_attribute("type")?;
-                            if let Some(value) = attr {
+                            if let Some(_value) = attr {
                                 // agent.set_gender(Gender::from_qname_uri(
                                 //     value.unescape_value()?.as_ref(),
                                 // ));
@@ -160,7 +160,7 @@ impl DeserializeXml for Agent {
                         }
                         b"source" => {
                             let attr = e.try_get_attribute("description")?;
-                            if let Some(source) = attr {
+                            if let Some(_source) = attr {
                                 // agent.add_source(SourceReference::new(
                                 //     Uri::new(source.unescape_value()?.to_string()),
                                 //     String::new(),
@@ -191,7 +191,7 @@ impl DeserializeXml for Agent {
                         }
                         b"title" => {
                             log::trace!("found 'title'");
-                            if let Event::Text(e_title) = deserializer.read_event_into(&mut buf)? {
+                            if let Event::Text(_e_title) = deserializer.read_event_into(&mut buf)? {
                                 // agent.add_title(e_title.unescape()?.into());
                             }
                         }

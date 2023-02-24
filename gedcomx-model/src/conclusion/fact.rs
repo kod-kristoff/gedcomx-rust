@@ -114,7 +114,7 @@ impl DeserializeXml for Fact {
                     match e.name().as_ref() {
                         b"gender" => {
                             let attr = e.try_get_attribute("type")?;
-                            if let Some(value) = attr {
+                            if let Some(_value) = attr {
                                 // fact.set_gender(Gender::from_qfact_uri(
                                 //     value.unescape_value()?.as_ref(),
                                 // ));
@@ -124,7 +124,7 @@ impl DeserializeXml for Fact {
                         }
                         b"source" => {
                             let attr = e.try_get_attribute("description")?;
-                            if let Some(source) = attr {
+                            if let Some(_source) = attr {
                                 // fact.add_source(SourceReference::new(
                                 //     Uri::new(source.unescape_value()?.to_string()),
                                 //     String::new(),

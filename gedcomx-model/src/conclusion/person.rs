@@ -114,7 +114,7 @@ impl Person {
         &self.id
     }
 
-    pub fn first_name_of_type(&self, name_type: NameType) -> Option<u32> {
+    pub fn first_name_of_type(&self, _name_type: NameType) -> Option<u32> {
         if self.names.is_empty() {
             return None;
         }

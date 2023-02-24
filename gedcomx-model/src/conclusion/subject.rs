@@ -4,7 +4,7 @@ use crate::{
     ser::{SerError, SerializeXml},
     source::SourceReference,
 };
-use quick_xml::events::{BytesEnd, BytesStart, Event};
+
 use serde::Deserializer;
 use std::{borrow::Cow, io};
 

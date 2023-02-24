@@ -1,8 +1,8 @@
-use quick_xml::events::{BytesEnd, BytesStart, Event};
+use quick_xml::events::{BytesStart, Event};
 
 use crate::common::IriRef;
 use crate::ser::SerializeXml;
-use crate::Result;
+
 
 use super::Reference;
 

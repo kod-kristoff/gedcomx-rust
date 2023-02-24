@@ -1,8 +1,8 @@
 use crate::{
     common::{EvidenceReference, IriRef, ResourceReference},
-    conclusion::{Fact, Name},
+    conclusion::{Fact},
     ser::{xml, SerError, SerializeXml},
-    types::{Gender, RelationshipType},
+    types::{RelationshipType},
 };
 use deserx::DeserializeXml;
 use quick_xml::events::{BytesEnd, BytesStart, Event};
@@ -178,7 +178,7 @@ impl DeserializeXml for Relationship {
                         }
                         b"evidence" => {
                             let attr = e.try_get_attribute("resource")?;
-                            if let Some(value) = attr {
+                            if let Some(_value) = attr {
                                 // relationship.subject.add_evidence(
                                 //     EvidenceReference::with_resource(
                                 //         value.unescape_value()?.into(),
@@ -190,7 +190,7 @@ impl DeserializeXml for Relationship {
                         }
                         b"gender" => {
                             let attr = e.try_get_attribute("type")?;
-                            if let Some(value) = attr {
+                            if let Some(_value) = attr {
                                 // relationship.set_gender(Gender::from_qname_uri(
                                 //     value.unescape_value()?.as_ref(),
                                 // ));
@@ -200,7 +200,7 @@ impl DeserializeXml for Relationship {
                         }
                         b"source" => {
                             let attr = e.try_get_attribute("description")?;
-                            if let Some(source) = attr {
+                            if let Some(_source) = attr {
                                 // relationship.add_source(SourceReference::new(
                                 //     Uri::new(source.unescape_value()?.to_string()),
                                 //     String::new(),

@@ -1,7 +1,7 @@
 use deserx::DeserializeXml;
 use quick_xml::events::{BytesEnd, BytesStart, BytesText, Event};
 
-use crate::{ser::SerializeXml, types::NamePartType};
+use crate::{ser::SerializeXml};
 
 /// A name form conclusion
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -68,7 +68,7 @@ impl SerializeXml for NameForm {
 impl DeserializeXml for NameForm {
     fn deserialize_xml_with_start<'de, R: std::io::BufRead>(
         deserializer: &mut quick_xml::Reader<R>,
-        start: &quick_xml::events::BytesStart<'de>,
+        _start: &quick_xml::events::BytesStart<'de>,
     ) -> Result<Self, quick_xml::Error> {
         let mut buf = Vec::new();
         // let attr = start.try_get_attribute("id")?;
@@ -95,7 +95,7 @@ impl DeserializeXml for NameForm {
                     match e.name().as_ref() {
                         b"gender" => {
                             let attr = e.try_get_attribute("type")?;
-                            if let Some(value) = attr {
+                            if let Some(_value) = attr {
                                 // name_form.set_gender(Gender::from_qname_form_uri(
                                 //     value.unescape_value()?.as_ref(),
                                 // ));
@@ -105,7 +105,7 @@ impl DeserializeXml for NameForm {
                         }
                         b"source" => {
                             let attr = e.try_get_attribute("description")?;
-                            if let Some(source) = attr {
+                            if let Some(_source) = attr {
                                 // name_form.add_source(SourceReference::new(
                                 //     Uri::new(source.unescape_value()?.to_string()),
                                 //     String::new(),
@@ -152,5 +152,5 @@ impl DeserializeXml for NameForm {
 }
 #[cfg(test)]
 mod tests {
-    use super::*;
+    
 }

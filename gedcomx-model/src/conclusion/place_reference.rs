@@ -55,7 +55,7 @@ impl SerializeXml for PlaceReference {
 impl DeserializeXml for PlaceReference {
     fn deserialize_xml_with_start<'de, R: std::io::BufRead>(
         deserializer: &mut quick_xml::Reader<R>,
-        start: &quick_xml::events::BytesStart<'de>,
+        _start: &quick_xml::events::BytesStart<'de>,
     ) -> Result<Self, quick_xml::Error> {
         let mut buf = Vec::new();
         let mut place = Self::new();
@@ -76,7 +76,7 @@ impl DeserializeXml for PlaceReference {
                     match e.name().as_ref() {
                         b"gender" => {
                             let attr = e.try_get_attribute("type")?;
-                            if let Some(value) = attr {
+                            if let Some(_value) = attr {
                                 // place.set_gender(Gender::from_qplace_uri(
                                 //     value.unescape_value()?.as_ref(),
                                 // ));
@@ -86,7 +86,7 @@ impl DeserializeXml for PlaceReference {
                         }
                         b"source" => {
                             let attr = e.try_get_attribute("description")?;
-                            if let Some(source) = attr {
+                            if let Some(_source) = attr {
                                 // place.add_source(SourceReference::new(
                                 //     Uri::new(source.unescape_value()?.to_string()),
                                 //     String::new(),

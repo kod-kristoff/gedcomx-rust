@@ -5,11 +5,11 @@ use serde::{Deserialize, Deserializer, Serializer};
 
 use super::{SourceCitation, SourceReference};
 use crate::{
-    common::{Date, DateTime, IriRef, ResourceReference, TextValue, Uri},
+    common::{DateTime, IriRef, ResourceReference, TextValue, Uri},
     ser::{xml, SerError, SerializeXml},
     types::ResourceType,
 };
-use serde_with::{serde_as, TimestampMilliSeconds};
+
 
 pub fn ser_opt_date<S: Serializer>(v: &Option<DateTime>, s: S) -> Result<S::Ok, S::Error> {
     match v {
@@ -222,7 +222,7 @@ impl DeserializeXml for SourceDescription {
                     match e.name().as_ref() {
                         b"analysis" => {
                             let attr = e.try_get_attribute("resource")?;
-                            if let Some(value) = attr {
+                            if let Some(_value) = attr {
                                 // source_description.set_analysis(DocumentReference::new(
                                 //     value.unescape_value()?.into(),
                                 // ));
@@ -243,7 +243,7 @@ impl DeserializeXml for SourceDescription {
                         }
                         b"gender" => {
                             let attr = e.try_get_attribute("type")?;
-                            if let Some(value) = attr {
+                            if let Some(_value) = attr {
                                 // source_description.set_gender(Gender::from_qname_uri(
                                 //     value.unescape_value()?.as_ref(),
                                 // ));
@@ -253,7 +253,7 @@ impl DeserializeXml for SourceDescription {
                         }
                         b"source" => {
                             let attr = e.try_get_attribute("description")?;
-                            if let Some(source) = attr {
+                            if let Some(_source) = attr {
                                 // source_description.add_source(SourceReference::new(
                                 //     Uri::new(source.unescape_value()?.to_string()),
                                 //     String::new(),

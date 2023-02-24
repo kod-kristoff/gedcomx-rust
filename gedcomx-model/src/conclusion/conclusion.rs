@@ -1,11 +1,9 @@
 use crate::{
-    common::{EvidenceReference, ResourceReference},
-    conclusion::{Fact, Name},
+    common::{ResourceReference},
     ser::{xml, SerError, SerializeXml},
     source::SourceReference,
-    types::Gender,
 };
-use quick_xml::events::{BytesEnd, BytesStart, Event};
+
 use std::io;
 
 #[serde_with::skip_serializing_none]

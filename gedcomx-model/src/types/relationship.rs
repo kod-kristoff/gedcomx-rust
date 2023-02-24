@@ -1,4 +1,4 @@
-use crate::{common::QnameUri, ser::SerializeXml};
+use crate::ser::SerializeXml;
 use quick_xml::events::{BytesStart, Event};
 
 /// Enumeration of standard relationship types.

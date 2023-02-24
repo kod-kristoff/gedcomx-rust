@@ -2,14 +2,14 @@ use std::error::Error;
 use std::io::Read;
 use std::{fs, io};
 
-use gedcomx_model::conclusion::{Date, Document, Fact, Person, PlaceReference, Relationship};
-use gedcomx_model::gedcomx::{verify_gedcomx, Attribution};
-use gedcomx_model::ser::{serialize_to_xml, XmlSerializer};
-use gedcomx_model::types::{FactType, Gender, RelationshipType, ResourceType};
+
+use gedcomx_model::gedcomx::{verify_gedcomx};
+use gedcomx_model::ser::{serialize_to_xml};
+
 use gedcomx_model::GedcomX;
 
 use deserx::DeserializeXml;
-use serde::{Deserialize, Serialize};
+
 
 use crate::common::emma_bocock_example;
 

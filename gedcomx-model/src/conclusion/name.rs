@@ -30,7 +30,7 @@ impl Name {
     pub fn add_name_form(&mut self, name_form: NameForm) {
         self.name_forms.push(name_form);
     }
-    pub fn get_part(&self, part: NamePartType) -> Option<&str> {
+    pub fn get_part(&self, _part: NamePartType) -> Option<&str> {
         None
     }
 
@@ -66,7 +66,7 @@ impl SerializeXml for Name {
 impl DeserializeXml for Name {
     fn deserialize_xml_with_start<'de, R: std::io::BufRead>(
         deserializer: &mut quick_xml::Reader<R>,
-        start: &quick_xml::events::BytesStart<'de>,
+        _start: &quick_xml::events::BytesStart<'de>,
     ) -> Result<Self, quick_xml::Error> {
         let mut buf = Vec::new();
         // let attr = start.try_get_attribute("id")?;
@@ -93,7 +93,7 @@ impl DeserializeXml for Name {
                     match e.name().as_ref() {
                         b"gender" => {
                             let attr = e.try_get_attribute("type")?;
-                            if let Some(value) = attr {
+                            if let Some(_value) = attr {
                                 // name.set_gender(Gender::from_qname_uri(
                                 //     value.unescape_value()?.as_ref(),
                                 // ));
@@ -103,7 +103,7 @@ impl DeserializeXml for Name {
                         }
                         b"source" => {
                             let attr = e.try_get_attribute("description")?;
-                            if let Some(source) = attr {
+                            if let Some(_source) = attr {
                                 // name.add_source(SourceReference::new(
                                 //     Uri::new(source.unescape_value()?.to_string()),
                                 //     String::new(),

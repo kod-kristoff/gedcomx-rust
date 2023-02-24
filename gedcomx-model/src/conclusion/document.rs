@@ -3,9 +3,7 @@ use quick_xml::events::{BytesEnd, BytesStart, BytesText, Event};
 
 use crate::{
     common::{IriRef, ResourceReference},
-    conclusion::NameForm,
-    ser::{xml, SerializeXml},
-    types::NamePartType,
+    ser::{SerializeXml},
 };
 
 /// An abstract document that contains derived (conclusionary) text -- for example, a transcription or researcher analysis.
