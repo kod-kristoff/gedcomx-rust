@@ -16,3 +16,4 @@ pub type Date = chrono::NaiveDate;
 pub type DateTime = chrono::DateTime<chrono::Utc>;
 pub type Iri = oxiri::Iri<String>;
 pub type IriRef = oxiri::IriRef<String>;
+pub type IriParseError = oxiri::IriParseError;

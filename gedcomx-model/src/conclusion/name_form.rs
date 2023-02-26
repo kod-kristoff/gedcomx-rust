@@ -1,7 +1,7 @@
 use deserx::DeserializeXml;
 use quick_xml::events::{BytesEnd, BytesStart, BytesText, Event};
 
-use crate::{ser::SerializeXml};
+use crate::ser::SerializeXml;
 
 /// A name form conclusion
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -151,6 +151,4 @@ impl DeserializeXml for NameForm {
     }
 }
 #[cfg(test)]
-mod tests {
-    
-}
+mod tests {}
